@@ -1,25 +1,23 @@
-import { useState } from 'react'
-
-import Chat from './components/Chat'
-import Login from './components/Login'
-
-
-
+import { useState } from "react";
+import Chat from "./components/Chat";
+import Navbar from "./components/Navbar";
 
 function App() {
+  const [showComponent, setShowComponent] = useState("chat"); // Default view
 
-    return (
-        <>
-            {/* div thats aligned to the center */}
-            <div className="flex flex-col w-full h-[100vh] items-center justify-center  min-h-[400px]">
-                <div className="SizedDiv">
-                    <Login/>
-                    <Chat/>
+  return (
+    <>
+      <Navbar setShowComponent={setShowComponent} />
 
-                </div>
-            </div>
-        </>
-    )
+      {/* Centered Content */}
+      <div className="flex flex-col w-full h-[100vh] items-center justify-center min-h-[400px]">
+        <div className="SizedDiv">
+          {showComponent === "chat" && <Chat />}
+          {showComponent === "users" && <p>Image Generation Component</p>}
+        </div>
+      </div>
+    </>
+  );
 }
 
-export default App
+export default App;

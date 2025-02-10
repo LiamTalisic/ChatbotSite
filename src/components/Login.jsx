@@ -29,6 +29,7 @@ const Login = () => {
         // 🔍 Check if user exists in Firestore
         const userDoc = await getDoc(userRef);
         if (!userDoc.exists()) {
+            console.log("User does not exist in Firestore. Creating user entry...");
             // 🚀 Add user with default permissions
             await setDoc(userRef, {
                 uid: user.uid,
@@ -38,15 +39,29 @@ const Login = () => {
             });
         }
 
+        // 🔹 Fetch user data again after updating Firestore
+        const updatedUserDoc = await getDoc(userRef);
+        if (updatedUserDoc.exists()) {
+            const userData = updatedUserDoc.data();
+            // console.log("User Firestore Data (After Save):", userData);
+            // console.log("User `canChat`:", userData.canChat);
+            
+        } else {
+            console.log("ERROR: User document still does not exist after creation!");
+        }
+
         setMessage(`Signed in as ${user.email}`);
-        console.log("User signed in and stored in Firestore");
+        
+        // console.log("User signed in and stored in Firestore");
+
     } catch (error) {
         setMessage(`Google Sign-in Error: ${error.message}`);
         console.error("Google Sign-in Error:", error);
     } finally {
         setLoading(false);
     }
-  };
+};
+
 
   // 🔹 Email/Password Sign-Up (with Firestore User Entry)
   const signUpWithEmailPassword = async () => {

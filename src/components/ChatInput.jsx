@@ -1,10 +1,48 @@
 import { useState, useRef, useEffect } from "react";
 import { auth } from "../firebaseConfig";
+import { getFirestore, doc, getDoc } from "firebase/firestore";
+
+const db = getFirestore();
 
 const ChatInput = ({ onSendMessage }) => {
     const [message, setMessage] = useState("");
+    const [canChat, setCanChat] = useState(false); // 🔹 Default to null (loading state)
     const textareaRef = useRef(null);
-    const maxHeight = 150; // Maximum height before scrollbar appears
+    const maxHeight = 150;
+
+    // 🔹 Function to Check Firestore `canChat` Permission
+    const checkChatPermission = async (user) => {
+        if (!user) {
+            setCanChat(false);
+            console.log("No user authenticated. Setting canChat to false.");
+            return;
+        }
+
+        try {
+            const userRef = doc(db, "users", user.uid);
+            const userDoc = await getDoc(userRef);
+
+            if (userDoc.exists()) {
+                const userData = userDoc.data();
+                console.log("ChatInput Firestore Data:", userData);
+                setCanChat(userData.canChat); // 🔥 Updates state dynamically
+            } else {
+                console.log("User document does not exist in Firestore.");
+                setCanChat(false);
+            }
+        } catch (error) {
+            console.error("Error checking chat permission:", error);
+            setCanChat(false);
+        }
+    };
+
+    // 🔹 Automatically Check Permissions When User Logs In/Out
+    useEffect(() => {
+        const unsubscribe = auth.onAuthStateChanged((user) => {
+            if (user?.uid) checkChatPermission(user);
+        });
+        return () => unsubscribe();
+    }, []);
 
     const sendMessage = async () => {
         const trimmedMessage = message.trim();
@@ -13,6 +51,12 @@ const ChatInput = ({ onSendMessage }) => {
         const user = auth.currentUser;
         if (!user) {
             console.error("User not authenticated");
+            return;
+        }
+
+        if (!canChat) {
+            console.error("User does not have chat permissions.");
+            alert("You do not have permission to send messages.");
             return;
         }
 
@@ -33,19 +77,28 @@ const ChatInput = ({ onSendMessage }) => {
                 body: JSON.stringify({ message: trimmedMessage }),
             });
 
-            console.log(token)
+            if (!response.ok) {
+                throw new Error(`Server error: ${response.status} - ${response.statusText}`);
+            }
 
-            const reply = await response.text();
-            console.log("AI Reply:", reply);
+            // ✅ Parse JSON response
+            const data = await response.json();
+
+            if (!data.reply) {
+                throw new Error("Invalid response format: Missing 'reply' key.");
+            }
+
+            console.log("AI Reply:", data.reply);
 
             // 🔹 Send AI response to ChatHistory
-            onSendMessage({ text: reply, sender: "bot" });
+            onSendMessage({ text: data.reply, sender: "bot" });
 
         } catch (error) {
             console.error("Error sending message:", error);
+            alert("Error communicating with the chatbot. Please try again.");
         }
-    };
 
+    };
 
     const handleSend = () => {
         sendMessage();
@@ -53,7 +106,7 @@ const ChatInput = ({ onSendMessage }) => {
 
     const handleKeyPress = (e) => {
         if (e.key === "Enter" && !e.shiftKey) {
-            e.preventDefault(); // Prevent default Enter behavior (new line)
+            e.preventDefault();
             handleSend();
         }
     };
@@ -61,13 +114,13 @@ const ChatInput = ({ onSendMessage }) => {
     const resizeTextarea = () => {
         const textarea = textareaRef.current;
         if (textarea) {
-            textarea.style.height = "auto"; // Reset height to auto
+            textarea.style.height = "auto";
             textarea.style.height = Math.min(textarea.scrollHeight, maxHeight) + "px";
         }
     };
 
     useEffect(() => {
-        resizeTextarea(); // Adjust height when message changes
+        resizeTextarea();
     }, [message]);
 
     return (
@@ -77,16 +130,20 @@ const ChatInput = ({ onSendMessage }) => {
                 value={message}
                 onChange={(e) => setMessage(e.target.value)}
                 onKeyDown={handleKeyPress}
-                placeholder="Type a message... (Shift+Enter for new line)"
+                placeholder={canChat === false ? "You do not have chat permissions." : "Type a message... (Shift+Enter for new line)"}
                 className="flex-1 p-2 rounded-lg outline-none resize-none overflow-y-auto max-h-[400px] min-h-[40px]
                             [&::-webkit-scrollbar]:w-2 
                             [&::-webkit-scrollbar-track]:bg-gray-100  [&::-webkit-scrollbar-track]:rounded-full
                             [&::-webkit-scrollbar-thumb]:bg-gray-500 [&::-webkit-scrollbar-thumb]:rounded-full"
+                disabled={canChat === false}
             />
 
             <button
                 onClick={handleSend}
-                className="ml-2 w-10 h-10 bg-blue-600 text-white rounded-full flex items-center justify-center hover:bg-blue-400 duration-200"
+                className={`ml-2 w-10 h-10 text-white rounded-full flex items-center justify-center duration-200 ${
+                    canChat === false ? "bg-gray-400 cursor-not-allowed" : "bg-blue-600 hover:bg-blue-400"
+                }`}
+                disabled={canChat === false}
             >
                 <svg
                     width="24"

@@ -4,6 +4,14 @@
   --BorderColor: rgba(200, 0, 0, 0.836);
 }
 
+body {
+  caret-color: rgba(0, 0, 0, 0);
+}
+
+textarea {
+  caret-color: rgba(0, 0, 0, 1);
+}
+
 .SizedDiv {
   display: flex;
   flex-direction: column;
