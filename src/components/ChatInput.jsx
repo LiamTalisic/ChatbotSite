@@ -1,16 +1,54 @@
 import { useState, useRef, useEffect } from "react";
+import { auth } from "../firebaseConfig";
 
 const ChatInput = ({ onSendMessage }) => {
     const [message, setMessage] = useState("");
     const textareaRef = useRef(null);
     const maxHeight = 150; // Maximum height before scrollbar appears
 
-    const handleSend = () => {
-        if (message.trim() !== "") {
-            onSendMessage(message);
-            setMessage("");
-            resizeTextarea(); // Reset textarea height after sending
+    const sendMessage = async () => {
+        const trimmedMessage = message.trim();
+        if (!trimmedMessage) return;
+
+        const user = auth.currentUser;
+        if (!user) {
+            console.error("User not authenticated");
+            return;
         }
+
+        // 🔹 Get Firebase Authentication Token
+        const token = await user.getIdToken();
+
+        // 🔹 Send user message to ChatHistory
+        onSendMessage({ text: trimmedMessage, sender: "user" });
+        setMessage("");
+
+        try {
+            const response = await fetch("http://localhost:3000/chat", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    "Authorization": `Bearer ${token}`, // ✅ Include Firebase Token
+                },
+                body: JSON.stringify({ message: trimmedMessage }),
+            });
+
+            console.log(token)
+
+            const reply = await response.text();
+            console.log("AI Reply:", reply);
+
+            // 🔹 Send AI response to ChatHistory
+            onSendMessage({ text: reply, sender: "bot" });
+
+        } catch (error) {
+            console.error("Error sending message:", error);
+        }
+    };
+
+
+    const handleSend = () => {
+        sendMessage();
     };
 
     const handleKeyPress = (e) => {
@@ -33,7 +71,7 @@ const ChatInput = ({ onSendMessage }) => {
     }, [message]);
 
     return (
-        <div className="flex items-end w-full mx-auto p-2 rounded-lg shadow-md shadow-gray-300 border border-gray-200 bg-white ">
+        <div className="flex items-end w-full mx-auto p-2 rounded-lg shadow-md shadow-gray-300 border border-gray-200 bg-white">
             <textarea
                 ref={textareaRef}
                 value={message}
@@ -66,8 +104,6 @@ const ChatInput = ({ onSendMessage }) => {
                     />
                 </svg>
             </button>
-
-
         </div>
     );
 };
