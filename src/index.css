@@ -1,0 +1,27 @@
+@import "tailwindcss";
+
+:root {
+  --BorderColor: rgba(200, 0, 0, 0.836);
+}
+
+.SizedDiv {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+  width: 100%;
+  height: 100%;
+}
+
+/* Small screens (min-width: 400px) */
+@media (min-width: 400px) {
+  .SizedDiv {
+    width: 80%;
+  }
+}
+
+/* Medium screens (min-width: 768px) */
+@media (min-width: 768px) {
+  .SizedDiv {
+    width: 60%;
+  }
+}
