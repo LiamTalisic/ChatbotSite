@@ -44,31 +44,32 @@ const ChatInput = ({ onSendMessage }) => {
         return () => unsubscribe();
     }, []);
 
+    const API_URL = import.meta.env.VITE_BACKEND_URL; // ✅ Load from .env
+
     const sendMessage = async () => {
         const trimmedMessage = message.trim();
         if (!trimmedMessage) return;
 
         const user = auth.currentUser;
         if (!user) {
-            console.error("User not authenticated");
-            return;
-        }
-
-        if (!canChat) {
-            console.error("User does not have chat permissions.");
-            alert("You do not have permission to send messages.");
+            console.error("User not authenticated.");
+            alert("Please log in first.");
             return;
         }
 
         // 🔹 Get Firebase Authentication Token
         const token = await user.getIdToken();
+        if (!token) {
+            console.error("Failed to get Firebase token.");
+            return;
+        }
 
         // 🔹 Send user message to ChatHistory
         onSendMessage({ text: trimmedMessage, sender: "user" });
         setMessage("");
 
         try {
-            const response = await fetch("http://localhost:3000/chat", {
+            const response = await fetch(`${API_URL}/chat`, {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
@@ -97,8 +98,8 @@ const ChatInput = ({ onSendMessage }) => {
             console.error("Error sending message:", error);
             alert("Error communicating with the chatbot. Please try again.");
         }
-
     };
+
 
     const handleSend = () => {
         sendMessage();
