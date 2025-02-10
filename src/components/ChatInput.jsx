@@ -90,7 +90,7 @@ const ChatInput = ({ onSendMessage }) => {
             }
 
             console.log("AI Reply:", data.reply);
-
+            
             // 🔹 Send AI response to ChatHistory
             onSendMessage({ text: data.reply, sender: "bot" });
 
