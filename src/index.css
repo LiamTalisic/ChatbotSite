@@ -2,9 +2,15 @@
 
 :root {
   --BorderColor: rgba(200, 0, 0, 0.836);
+
+
 }
 
 body {
+  margin: 0;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
   caret-color: rgba(0, 0, 0, 0);
 }
 
@@ -12,17 +18,17 @@ textarea {
   caret-color: rgba(0, 0, 0, 1);
 }
 
-.chatBox {
-  height: 100vh;
-
+.chatbox {
+  height: 100%;
+  margin-top: 0;
 }
 
 .SizedDiv {
   display: flex;
   flex-direction: column;
-  gap: 1.25rem;
+
   width: 100%;
-  height: 100%;
+  height: 100vh;
 }
 
 /* Small screens (min-width: 400px) */
@@ -32,8 +38,8 @@ textarea {
 
   }
 
-  .chatBox {
-    margin-top: 3.75rem;
+  .chatbox {
+    margin-top: 3.5rem;
   }
 }
 
@@ -43,7 +49,8 @@ textarea {
     width: 60%;
   }
 
-  .chatBox {
-    margin-top: 3.25rem;
+  .chatbox {
+    height: 100%;
+    margin-top: 1.25rem;
   }
 }

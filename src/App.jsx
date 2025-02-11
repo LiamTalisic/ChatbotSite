@@ -9,7 +9,9 @@ function App() {
       <Navbar/>
 
       {/* Centered Content */}
-      <div className="flex flex-col w-full h-[90vh] items-center justify-center min-h-[400px]">
+        
+
+      <div className="flex flex-col items-center justify-center min-h-[400px] h-[100vh] ">
         <div className="SizedDiv">
           <Chat />
           

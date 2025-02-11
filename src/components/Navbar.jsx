@@ -29,7 +29,7 @@ function NavBar() {
                         await setDoc(userRef, {
                             uid: authUser.uid,
                             email: authUser.email,
-                            credits: 5,  // 🔹 New users get 10 free credits
+                            credits: 4,  // 🔹 New users get 4 free credits
                             canChat: true, // 🔹 Allow chat by default
                             stripeCustomerId: "", // 🔹 Will be filled when first payment is made
                             lastPaymentDate: "", // 🔹 Will update when a payment is made
