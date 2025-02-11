@@ -91,7 +91,7 @@ function NavBar() {
                     "Content-Type": "application/json",
                     "Authorization": `Bearer ${token}`
                 },
-                body: JSON.stringify({ creditsAmount: 250 }) // Default: 50 credits purchase
+                body: JSON.stringify({ creditsAmount: 50 }) // Default: 50 credits purchase
             });
 
             if (!response.ok) {
