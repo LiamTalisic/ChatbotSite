@@ -25,7 +25,19 @@ const ChatHistory = ({ messages }) => {
                         className={`p-2 rounded-2xl max-w-[80%] break-words 
                             ${message.sender === "user" ? "bg-blue-500 text-white self-end" : "bg-gray-200 text-black self-start"}`}
                     >
-                        {message.text}
+                        {message.isImage ? (
+                            <div className="flex flex-col items-start">
+                                <p className="text-sm text-gray-600 mb-1">AI Generated Image:</p>
+                                <img 
+                                    src={message.text} 
+                                    alt="Generated content" 
+                                    className="max-w-full rounded-lg shadow-lg" 
+                                    style={{ maxHeight: "300px", objectFit: "cover" }}
+                                />
+                            </div>
+                        ) : (
+                            <p className="whitespace-pre-wrap">{message.text}</p>
+                        )}
                     </div>
                 ))}
             </div>

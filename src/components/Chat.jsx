@@ -5,14 +5,18 @@ import ChatInput from "./ChatInput";
 const Chat = () => {
     const [messages, setMessages] = useState([
         { id: 1, text: "Hello! How can I assist you today?", sender: "bot" },
-        { id: 2, text: "Hi! I need help with my project.", sender: "user" },
     ]);
 
     // 🔹 Ensure all messages get a unique ID and proper format
     const handleSendMessage = (messageObj) => {
         setMessages((prevMessages) => [
             ...prevMessages,
-            { id: prevMessages.length + 1, text: messageObj.text, sender: messageObj.sender },
+            { 
+                id: prevMessages.length + 1, 
+                text: messageObj.text, 
+                sender: messageObj.sender, 
+                isImage: messageObj.isImage || false 
+            },
         ]);
     };
 

@@ -1,20 +1,20 @@
 import { useState, useRef, useEffect } from "react";
 import { auth } from "../firebaseConfig";
-import { getFirestore, doc, getDoc } from "firebase/firestore";
+import { getFirestore, doc, getDoc, onSnapshot } from "firebase/firestore";
 
 const db = getFirestore();
 
 const ChatInput = ({ onSendMessage }) => {
     const [message, setMessage] = useState("");
-    const [canChat, setCanChat] = useState(false); // 🔹 Default to null (loading state)
+    const [canChat, setCanChat] = useState(false);
+    const [credits, setCredits] = useState(0); // 🔹 Track user credits
     const textareaRef = useRef(null);
     const maxHeight = 150;
+    const API_URL = import.meta.env.VITE_BACKEND_URL;
 
-    // 🔹 Function to Check Firestore `canChat` Permission
     const checkChatPermission = async (user) => {
         if (!user) {
             setCanChat(false);
-            console.log("No user authenticated. Setting canChat to false.");
             return;
         }
 
@@ -24,27 +24,40 @@ const ChatInput = ({ onSendMessage }) => {
 
             if (userDoc.exists()) {
                 const userData = userDoc.data();
-                console.log("ChatInput Firestore Data:", userData);
-                setCanChat(userData.canChat); // 🔥 Updates state dynamically
+                setCanChat(userData.canChat);
+                setCredits(userData.credits || 0); // ✅ Get user credits
             } else {
-                console.log("User document does not exist in Firestore.");
                 setCanChat(false);
+                setCredits(0);
             }
         } catch (error) {
             console.error("Error checking chat permission:", error);
             setCanChat(false);
+            setCredits(0);
         }
     };
 
-    // 🔹 Automatically Check Permissions When User Logs In/Out
+    // 🔹 Listen for real-time updates to credits
     useEffect(() => {
         const unsubscribe = auth.onAuthStateChanged((user) => {
-            if (user?.uid) checkChatPermission(user);
+            if (user?.uid) {
+                const userRef = doc(db, "users", user.uid);
+
+                return onSnapshot(userRef, (docSnap) => {
+                    if (docSnap.exists()) {
+                        const userData = docSnap.data();
+                        setCanChat(userData.canChat);
+                        setCredits(userData.credits || 0);
+                    } else {
+                        setCanChat(false);
+                        setCredits(0);
+                    }
+                });
+            }
         });
+
         return () => unsubscribe();
     }, []);
-
-    const API_URL = import.meta.env.VITE_BACKEND_URL; // ✅ Load from .env
 
     const sendMessage = async () => {
         const trimmedMessage = message.trim();
@@ -52,19 +65,18 @@ const ChatInput = ({ onSendMessage }) => {
 
         const user = auth.currentUser;
         if (!user) {
-            console.error("User not authenticated.");
             alert("Please log in first.");
             return;
         }
 
-        // 🔹 Get Firebase Authentication Token
-        const token = await user.getIdToken();
-        if (!token) {
-            console.error("Failed to get Firebase token.");
+        if (credits <= 0) {
+            alert("You have no credits left. Please purchase more to continue.");
             return;
         }
 
-        // 🔹 Send user message to ChatHistory
+        const token = await user.getIdToken();
+        if (!token) return;
+
         onSendMessage({ text: trimmedMessage, sender: "user" });
         setMessage("");
 
@@ -73,7 +85,7 @@ const ChatInput = ({ onSendMessage }) => {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
-                    "Authorization": `Bearer ${token}`, // ✅ Include Firebase Token
+                    "Authorization": `Bearer ${token}`,
                 },
                 body: JSON.stringify({ message: trimmedMessage }),
             });
@@ -82,24 +94,19 @@ const ChatInput = ({ onSendMessage }) => {
                 throw new Error(`Server error: ${response.status} - ${response.statusText}`);
             }
 
-            // ✅ Parse JSON response
             const data = await response.json();
 
-            if (!data.reply) {
-                throw new Error("Invalid response format: Missing 'reply' key.");
+            if (data.imageUrl) {
+                onSendMessage({ text: data.imageUrl, sender: "bot", isImage: true });
+            } else if (data.reply) {
+                onSendMessage({ text: data.reply, sender: "bot" });
             }
 
-            console.log("AI Reply:", data.reply);
-            
-            // 🔹 Send AI response to ChatHistory
-            onSendMessage({ text: data.reply, sender: "bot" });
-
         } catch (error) {
-            console.error("Error sending message:", error);
+            console.error("Error processing message:", error);
             alert("Error communicating with the chatbot. Please try again.");
         }
     };
-
 
     const handleSend = () => {
         sendMessage();
@@ -131,20 +138,20 @@ const ChatInput = ({ onSendMessage }) => {
                 value={message}
                 onChange={(e) => setMessage(e.target.value)}
                 onKeyDown={handleKeyPress}
-                placeholder={canChat === false ? "You do not have chat permissions." : "Type a message... (Shift+Enter for new line)"}
+                placeholder={credits === 0 ? "You have no credits left. Purchase more to continue." : "Type a message... (Shift+Enter for new line)"}
                 className="flex-1 p-2 rounded-lg outline-none resize-none overflow-y-auto max-h-[400px] min-h-[40px]
                             [&::-webkit-scrollbar]:w-2 
-                            [&::-webkit-scrollbar-track]:bg-gray-100  [&::-webkit-scrollbar-track]:rounded-full
+                            [&::-webkit-scrollbar-track]:bg-gray-100 [&::-webkit-scrollbar-track]:rounded-full
                             [&::-webkit-scrollbar-thumb]:bg-gray-500 [&::-webkit-scrollbar-thumb]:rounded-full"
-                disabled={canChat === false}
+                disabled={credits === 0}
             />
 
             <button
                 onClick={handleSend}
                 className={`ml-2 w-10 h-10 text-white rounded-full flex items-center justify-center duration-200 ${
-                    canChat === false ? "bg-gray-400 cursor-not-allowed" : "bg-blue-600 hover:bg-blue-400"
+                    credits === 0 ? "bg-gray-400 cursor-not-allowed" : "bg-blue-600 hover:bg-blue-400"
                 }`}
-                disabled={canChat === false}
+                disabled={credits === 0}
             >
                 <svg
                     width="24"
