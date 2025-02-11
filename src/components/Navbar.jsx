@@ -91,15 +91,22 @@ function NavBar() {
                     "Content-Type": "application/json",
                     "Authorization": `Bearer ${token}`
                 },
-                body: JSON.stringify({ creditsAmount: 50 }) // Default: 50 credits purchase
+                body: JSON.stringify({ creditsAmount: 250 }) // Default: 50 credits purchase
             });
 
             if (!response.ok) {
                 throw new Error(`Error: ${response.status}`);
             }
 
+            //log the response
             const data = await response.json();
-            window.location.href = data.url; // Redirect to Stripe Payment Link
+            console.log(data);
+
+            // Open Stripe Checkout
+            window.open(data.url, "_blank");
+
+            
+            
         } catch (error) {
             console.error("Checkout Error:", error);
             alert("Failed to initiate checkout. Please try again.");
