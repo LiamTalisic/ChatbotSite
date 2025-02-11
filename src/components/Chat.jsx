@@ -21,7 +21,7 @@ const Chat = () => {
     };
 
     return (
-        <div className="flex flex-col h-full max-h-[95%] p-5 m-5 border rounded-2xl shadow-md shadow-black bg-gray-50 justify-between">
+        <div className="flex flex-col p-5 mx-5 border rounded-2xl shadow-md shadow-black bg-gray-50 justify-between chatBox">
             <ChatHistory messages={messages} />
             <ChatInput onSendMessage={handleSendMessage} />
         </div>

@@ -7,7 +7,7 @@ const provider = new GoogleAuthProvider();
 const db = getFirestore();
 const API_URL = import.meta.env.VITE_BACKEND_URL;
 
-function NavBar({ setShowComponent }) {
+function NavBar() {
     const [user, setUser] = useState(null);
     const [credits, setCredits] = useState(0);
     const [dropdownOpen, setDropdownOpen] = useState(false);
@@ -107,7 +107,7 @@ function NavBar({ setShowComponent }) {
     };
 
     return (
-        <nav className="draggable no-draggable-children sticky top-0 p-3 mb-1.5 flex items-center justify-between z-10 h-header-height font-semibold bg-token-main-surface-primary max-md:hidden">
+        <nav className="draggable no-draggable-children absolute w-full top-0 p-3 flex items-center justify-between z-10 h-header-height font-semibold bg-token-main-surface-primary ">
             <div className="flex items-center space-x-4 pl-10">
                 <button onClick={() => setShowComponent("chat")} className="hover:text-gray-300 duration-150">
                     New Text Chat

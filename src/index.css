@@ -12,6 +12,11 @@ textarea {
   caret-color: rgba(0, 0, 0, 1);
 }
 
+.chatBox {
+  height: 100vh;
+
+}
+
 .SizedDiv {
   display: flex;
   flex-direction: column;
@@ -23,7 +28,12 @@ textarea {
 /* Small screens (min-width: 400px) */
 @media (min-width: 400px) {
   .SizedDiv {
-    width: 80%;
+    width: 100%;
+
+  }
+
+  .chatBox {
+    margin-top: 3.75rem;
   }
 }
 
@@ -31,5 +41,9 @@ textarea {
 @media (min-width: 768px) {
   .SizedDiv {
     width: 60%;
+  }
+
+  .chatBox {
+    margin-top: 3.25rem;
   }
 }
