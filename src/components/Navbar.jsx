@@ -85,7 +85,8 @@ function NavBar() {
 
         try {
             const token = await user.getIdToken();
-            const response = await fetch(`${API_URL}/create-checkout-session`, {
+
+            const response = await fetch(`${API_URL}/payment/create-checkout-session`, {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",

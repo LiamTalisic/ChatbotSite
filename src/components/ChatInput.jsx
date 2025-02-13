@@ -83,7 +83,6 @@ const ChatInput = ({ onSendMessage, setMessages }) => {
 
     setIsLoading(true);
     onSendMessage({ text: trimmedMessage, sender: "user" });
-
     setMessage("");
 
     try {
@@ -104,26 +103,7 @@ const ChatInput = ({ onSendMessage, setMessages }) => {
         // ✅ STREAM HANDLING
         const reader = response.body.getReader();
         const decoder = new TextDecoder();
-        let botMessage = { id: Date.now(), text: "", sender: "bot", isImage: false };
-
-        // ✅ Read first chunk (metadata/image check)
-        const { value, done } = await reader.read();
-        if (done) return;
-
-        const firstChunk = decoder.decode(value, { stream: true }).trim();
-
-        try {
-            const metadata = JSON.parse(firstChunk.replace("data: ", "").trim());
-            if (metadata.isImage) {
-                setMessages((prevMessages) => [
-                    ...prevMessages,
-                    { id: Date.now(), text: metadata.imageUrl, sender: "bot", isImage: true },
-                ]);
-                return; // ✅ Stop processing further, since it's an image.
-            }
-        } catch (error) {
-            console.log("No image metadata detected, proceeding with text.");
-        }
+        let botMessage = { id: Date.now(), text: "", sender: "bot" };
 
         // ✅ Add empty message first so we can append text in real-time
         setMessages((prevMessages) => [...prevMessages, botMessage]);
@@ -138,9 +118,7 @@ const ChatInput = ({ onSendMessage, setMessages }) => {
             // ✅ Append each chunk to the bot's message
             setMessages((prevMessages) =>
                 prevMessages.map((msg) =>
-                    msg.id === botMessage.id ? { ...msg, text: msg.text + chunk } : msg
-                )
-            );
+                    msg.id === botMessage.id ? { ...msg, text: msg.text + chunk } : msg));
         }
     } catch (error) {
         if (error.name === "AbortError") {
@@ -153,7 +131,6 @@ const ChatInput = ({ onSendMessage, setMessages }) => {
         setIsLoading(false);
     }
 };
-
 
 
 
