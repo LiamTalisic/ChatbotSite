@@ -16,31 +16,6 @@ const ChatInput = ({ onSendMessage, setMessages }) => {
     const maxHeight = 150;
     const API_URL = import.meta.env.VITE_BACKEND_URL;
 
-    const checkChatPermission = async (user) => {
-        if (!user) {
-            setCanChat(false);
-            return;
-        }
-
-        try {
-            const userRef = doc(db, "users", user.uid);
-            const userDoc = await getDoc(userRef);
-
-            if (userDoc.exists()) {
-                const userData = userDoc.data();
-                setCanChat(userData.canChat);
-                setCredits(userData.credits || 0); // ✅ Get user credits
-            } else {
-                setCanChat(false);
-                setCredits(0);
-            }
-        } catch (error) {
-            console.error("Error checking chat permission:", error);
-            setCanChat(false);
-            setCredits(0);
-        }
-    };
-
     // 🔹 Listen for real-time updates to credits
     useEffect(() => {
         const unsubscribe = auth.onAuthStateChanged((user) => {
@@ -64,74 +39,95 @@ const ChatInput = ({ onSendMessage, setMessages }) => {
     }, []);
 
     const sendMessage = async (controller) => {
-    const trimmedMessage = message.trim();
-    if (!trimmedMessage) return;
+        const trimmedMessage = message.trim();
+        if (!trimmedMessage) return;
 
-    const user = auth.currentUser;
-    if (!user) {
-        alert("Please log in first.");
-        return;
-    }
-
-    if (credits <= 0) {
-        alert("You have no credits left. Please purchase more to continue.");
-        return;
-    }
-
-    const token = await user.getIdToken();
-    if (!token) return;
-
-    setIsLoading(true);
-    onSendMessage({ text: trimmedMessage, sender: "user" });
-    setMessage("");
-
-    try {
-        const response = await fetch(`${API_URL}/chat`, {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json",
-                "Authorization": `Bearer ${token}`,
-            },
-            body: JSON.stringify({ message: trimmedMessage }),
-            signal: controller.signal, // Attach AbortController
-        });
-
-        if (!response.ok) {
-            throw new Error(`Server error: ${response.status} - ${response.statusText}`);
+        const user = auth.currentUser;
+        if (!user) {
+            alert("Please log in first.");
+            return;
         }
 
-        // ✅ STREAM HANDLING
-        const reader = response.body.getReader();
-        const decoder = new TextDecoder();
-        let botMessage = { id: Date.now(), text: "", sender: "bot" };
+        if (credits <= 0) {
+            alert("You have no credits left. Please purchase more to continue.");
+            return;
+        }
 
-        // ✅ Add empty message first so we can append text in real-time
-        setMessages((prevMessages) => [...prevMessages, botMessage]);
+        const token = await user.getIdToken();
+        if (!token) return;
 
-        while (true) {
+        setIsLoading(true);
+        onSendMessage({ text: trimmedMessage, sender: "user" });
+
+        setMessage("");
+
+        try {
+            const response = await fetch(`${API_URL}/chat`, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    "Authorization": `Bearer ${token}`,
+                },
+                body: JSON.stringify({ message: trimmedMessage }),
+                signal: controller.signal, // Attach AbortController
+            });
+
+            if (!response.ok) {
+                throw new Error(`Server error: ${response.status} - ${response.statusText}`);
+            }
+
+            // ✅ STREAM HANDLING
+            const reader = response.body.getReader();
+            const decoder = new TextDecoder();
+            let botMessage = { id: Date.now(), text: "", sender: "bot", isImage: false };
+
+            // ✅ Read first chunk (metadata/image check)
             const { value, done } = await reader.read();
-            if (done) break;
+            if (done) return;
 
-            // ✅ Decode chunked response
-            const chunk = decoder.decode(value, { stream: true });
+            const firstChunk = decoder.decode(value, { stream: true }).trim();
 
-            // ✅ Append each chunk to the bot's message
-            setMessages((prevMessages) =>
-                prevMessages.map((msg) =>
-                    msg.id === botMessage.id ? { ...msg, text: msg.text + chunk } : msg));
+            try {
+                const metadata = JSON.parse(firstChunk.replace("data: ", "").trim());
+                if (metadata.isImage) {
+                    setMessages((prevMessages) => [
+                        ...prevMessages,
+                        { id: Date.now(), text: metadata.imageUrl, sender: "bot", isImage: true },
+                    ]);
+                    return; // ✅ Stop processing further, since it's an image.
+                }
+            } catch (error) {
+                console.log("No image metadata detected, proceeding with text.");
+            }
+
+            // ✅ Add empty message first so we can append text in real-time
+            setMessages((prevMessages) => [...prevMessages, botMessage]);
+
+            while (true) {
+                const { value, done } = await reader.read();
+                if (done) break;
+
+                // ✅ Decode chunked response
+                const chunk = decoder.decode(value, { stream: true });
+
+                // ✅ Append each chunk to the bot's message
+                setMessages((prevMessages) =>
+                    prevMessages.map((msg) =>
+                        msg.id === botMessage.id ? { ...msg, text: msg.text + chunk } : msg
+                    )
+                );
+            }
+        } catch (error) {
+            if (error.name === "AbortError") {
+                console.log("Fetch aborted");
+            } else {
+                console.error("Error processing message:", error);
+                alert("Error communicating with the chatbot. Please try again.");
+            }
+        } finally {
+            setIsLoading(false);
         }
-    } catch (error) {
-        if (error.name === "AbortError") {
-            console.log("Fetch aborted");
-        } else {
-            console.error("Error processing message:", error);
-            alert("Error communicating with the chatbot. Please try again.");
-        }
-    } finally {
-        setIsLoading(false);
-    }
-};
-
+    };
 
 
     const handleSend = () => {
