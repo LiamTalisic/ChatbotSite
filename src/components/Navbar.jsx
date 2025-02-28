@@ -25,16 +25,18 @@ function NavBar() {
                     if (!userDoc.exists()) {
                         console.log("🆕 Creating new user in Firestore...");
 
-                        // ✅ Create new user document in Firestore
+                        //  Create new user document in Firestore
+                        // this is terrible, need to set credits in the backend
+
                         await setDoc(userRef, {
                             uid: authUser.uid,
                             email: authUser.email,
-                            credits: 4,  // 🔹 New users get 4 free credits
+                            credits: 10, // 🔹 New users get 10 free credits
                             canChat: true, // 🔹 Allow chat by default
                             stripeCustomerId: "", // 🔹 Will be filled when first payment is made
                             lastPaymentDate: "", // 🔹 Will update when a payment is made
                             totalCreditsPurchased: 0, // 🔹 Tracks total credits purchased
-                            createdAt: new Date().toISOString()
+                            createdAt: new Date().toISOString(),
                         });
 
                         console.log("✅ New user successfully added to Firestore.");
@@ -90,9 +92,9 @@ function NavBar() {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
-                    "Authorization": `Bearer ${token}`
+                    Authorization: `Bearer ${token}`,
                 },
-                body: JSON.stringify({ creditsAmount: 50 }) // Default: 50 credits purchase
+                body: JSON.stringify({ creditsAmount: 50 }), // Default: 50 credits purchase
             });
 
             if (!response.ok) {
@@ -105,9 +107,6 @@ function NavBar() {
 
             // Open Stripe Checkout
             window.open(data.url, "_blank");
-
-            
-            
         } catch (error) {
             console.error("Checkout Error:", error);
             alert("Failed to initiate checkout. Please try again.");
@@ -117,6 +116,7 @@ function NavBar() {
     return (
         <nav className="draggable no-draggable-children absolute w-full top-0 p-3 flex items-center justify-between z-10 h-header-height font-semibold bg-token-main-surface-primary ">
             <div className="flex items-center space-x-4 pl-10">
+                {/* change this to a model selection dropdown*/}
                 <button onClick={() => setShowComponent("chat")} className="hover:text-gray-300 duration-150">
                     New Text Chat
                 </button>
@@ -129,31 +129,17 @@ function NavBar() {
                         <span className="text-gray-700 font-semibold">Credits: {credits}</span>
 
                         {/* Profile Picture Button */}
-                        <button 
-                            onClick={() => setDropdownOpen(!dropdownOpen)} 
-                            className="flex h-10 w-10 items-center justify-center rounded-full hover:bg-gray-600 focus-visible:outline-0"
-                        >
-                            <img
-                                alt="User"
-                                src={user.photoURL || "https://via.placeholder.com/40"}
-                                className="rounded-full w-10 h-10"
-                                referrerPolicy="no-referrer"
-                            />
+                        <button onClick={() => setDropdownOpen(!dropdownOpen)} className="flex h-10 w-10 items-center justify-center rounded-full hover:bg-gray-600 focus-visible:outline-0">
+                            <img alt="User" src={user.photoURL || "https://via.placeholder.com/40"} className="rounded-full w-10 h-10" referrerPolicy="no-referrer" />
                         </button>
 
                         {/* Dropdown Menu */}
                         {dropdownOpen && (
                             <div className="absolute right-10 mt-35 w-48 bg-white shadow-md rounded-lg overflow-hidden border border-gray-200">
-                                <button 
-                                    onClick={handleBuyCredits} 
-                                    className="w-full text-left px-4 py-2 hover:bg-gray-100 text-gray-800"
-                                >
+                                <button onClick={handleBuyCredits} className="w-full text-left px-4 py-2 hover:bg-gray-100 text-gray-800">
                                     Buy Credits
                                 </button>
-                                <button 
-                                    onClick={handleLogout} 
-                                    className="w-full text-left px-4 py-2 hover:bg-gray-100 text-gray-800 border-t border-gray-300"
-                                >
+                                <button onClick={handleLogout} className="w-full text-left px-4 py-2 hover:bg-gray-100 text-gray-800 border-t border-gray-300">
                                     Logout
                                 </button>
                             </div>

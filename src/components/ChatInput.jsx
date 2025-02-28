@@ -1,11 +1,10 @@
 import { useState, useRef, useEffect } from "react";
 import { auth } from "../firebaseConfig";
-import { getFirestore, doc, getDoc, onSnapshot } from "firebase/firestore";
+import { getFirestore, doc, onSnapshot } from "firebase/firestore";
 
 const db = getFirestore();
 
 const ChatInput = ({ onSendMessage, setMessages }) => {
-
     const [message, setMessage] = useState("");
     const [canChat, setCanChat] = useState(false);
     const [credits, setCredits] = useState(0); // 🔹 Track user credits
@@ -66,7 +65,7 @@ const ChatInput = ({ onSendMessage, setMessages }) => {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
-                    "Authorization": `Bearer ${token}`,
+                    Authorization: `Bearer ${token}`,
                 },
                 body: JSON.stringify({ message: trimmedMessage }),
                 signal: controller.signal, // Attach AbortController
@@ -90,10 +89,7 @@ const ChatInput = ({ onSendMessage, setMessages }) => {
             try {
                 const metadata = JSON.parse(firstChunk.replace("data: ", "").trim());
                 if (metadata.isImage) {
-                    setMessages((prevMessages) => [
-                        ...prevMessages,
-                        { id: Date.now(), text: metadata.imageUrl, sender: "bot", isImage: true },
-                    ]);
+                    setMessages((prevMessages) => [...prevMessages, { id: Date.now(), text: metadata.imageUrl, sender: "bot", isImage: true }]);
                     return; // ✅ Stop processing further, since it's an image.
                 }
             } catch (error) {
@@ -103,19 +99,17 @@ const ChatInput = ({ onSendMessage, setMessages }) => {
             // ✅ Add empty message first so we can append text in real-time
             setMessages((prevMessages) => [...prevMessages, botMessage]);
 
+            //add the first chunk to the message
+            setMessages((prevMessages) => prevMessages.map((msg) => (msg.id === botMessage.id ? { ...msg, text: firstChunk } : msg)));
+
             while (true) {
                 const { value, done } = await reader.read();
+
                 if (done) break;
 
-                // ✅ Decode chunked response
                 const chunk = decoder.decode(value, { stream: true });
 
-                // ✅ Append each chunk to the bot's message
-                setMessages((prevMessages) =>
-                    prevMessages.map((msg) =>
-                        msg.id === botMessage.id ? { ...msg, text: msg.text + chunk } : msg
-                    )
-                );
+                setMessages((prevMessages) => prevMessages.map((msg) => (msg.id === botMessage.id ? { ...msg, text: msg.text + chunk } : msg)));
             }
         } catch (error) {
             if (error.name === "AbortError") {
@@ -128,7 +122,6 @@ const ChatInput = ({ onSendMessage, setMessages }) => {
             setIsLoading(false);
         }
     };
-
 
     const handleSend = () => {
         if (isLoading && controller) {
@@ -175,67 +168,59 @@ const ChatInput = ({ onSendMessage, setMessages }) => {
                 disabled={credits === 0}
             />
 
-                <button
-                    onClick={handleSend}
-                    onMouseEnter={() => setIsHovered(true)}
-                    onMouseLeave={() => setIsHovered(false)}
-                    className={`relative ml-2 w-10 h-10 text-white rounded-full flex items-center justify-center 
+            <button
+                onClick={handleSend}
+                onMouseEnter={() => setIsHovered(true)}
+                onMouseLeave={() => setIsHovered(false)}
+                className={`relative ml-2 w-10 h-10 text-white rounded-full flex items-center justify-center 
                         transition-all duration-300 ease-in-out 
                         ${credits === 0 ? "bg-gray-400 cursor-not-allowed" : isLoading ? "bg-blue-600 hover:bg-blue-400" : "bg-blue-600 hover:bg-blue-400"}
                     `}
-                    disabled={credits === 0}
-                >   
-                    {/* Icon container */}
-                    <div className="relative w-6 h-6 flex items-center justify-center">
-                        {/* Stop icon (fades in on hover) */}
+                disabled={credits === 0}
+            >
+                {/* Icon container */}
+                <div className="relative w-6 h-6 flex items-center justify-center">
+                    {/* Stop icon (fades in on hover) */}
                     <svg
                         width="24"
                         height="24"
                         viewBox="0 0 24 24"
                         fill="none"
                         xmlns="http://www.w3.org/2000/svg"
-                        className={`absolute transition-opacity duration-300 transform scale-95 ${
-                            isLoading && isHovered ? "opacity-100 scale-100" : "opacity-0 scale-90"
-                        }`}
+                        className={`absolute transition-opacity duration-300 transform scale-95 ${isLoading && isHovered ? "opacity-100 scale-100" : "opacity-0 scale-90"}`}
                     >
                         {/* Rounded stop icon */}
                         <rect x="6" y="6" width="12" height="12" fill="currentColor" rx="3" ry="3" />
                     </svg>
 
+                    {/* Rotating loader (fades out on hover) */}
+                    <svg
+                        className={`absolute animate-spin transition-opacity duration-300 transform scale-95 ${isLoading && !isHovered ? "opacity-100 scale-100" : "opacity-0 scale-90"}`}
+                        viewBox="0 0 24 24"
+                        fill="none"
+                    >
+                        <circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                        <path fill="currentColor" d="M4 12a8 8 0 018-8"></path>
+                    </svg>
 
-                        {/* Rotating loader (fades out on hover) */}
-                        <svg
-                            className={`absolute animate-spin transition-opacity duration-300 transform scale-95 ${
-                                isLoading && !isHovered ? "opacity-100 scale-100" : "opacity-0 scale-90"
-                            }`}
-                            viewBox="0 0 24 24"
-                            fill="none"
-                        >
-                            <circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                            <path fill="currentColor" d="M4 12a8 8 0 018-8"></path>
-                        </svg>
-
-                        {/* Send icon (only visible when idle) */}
-                        <svg
-                            width="24"
-                            height="24"
-                            viewBox="0 0 32 32"
-                            fill="none"
-                            xmlns="http://www.w3.org/2000/svg"
-                            className={`absolute transition-opacity duration-300 transform scale-95 ${
-                                isLoading ? "opacity-0 scale-90" : "opacity-100 scale-100"
-                            }`}
-                        >
-                            <path
-                                fillRule="evenodd"
-                                clipRule="evenodd"
-                                d="M15.1918 8.90615C15.6381 8.45983 16.3618 8.45983 16.8081 8.90615L21.9509 14.049C22.3972 14.4953 22.3972 15.2189 21.9509 15.6652C21.5046 16.1116 20.781 16.1116 20.3347 15.6652L17.1428 12.4734V22.2857C17.1428 22.9169 16.6311 23.4286 15.9999 23.4286C15.3688 23.4286 14.8571 22.9169 14.8571 22.2857V12.4734L11.6652 15.6652C11.2189 16.1116 10.4953 16.1116 10.049 15.6652C9.60265 15.2189 9.60265 14.4953 10.049 14.049L15.1918 8.90615Z"
-                                fill="currentColor"
-                            />
-                        </svg>
-                    </div>
-                </button>
-
+                    {/* Send icon (only visible when idle) */}
+                    <svg
+                        width="24"
+                        height="24"
+                        viewBox="0 0 32 32"
+                        fill="none"
+                        xmlns="http://www.w3.org/2000/svg"
+                        className={`absolute transition-opacity duration-300 transform scale-95 ${isLoading ? "opacity-0 scale-90" : "opacity-100 scale-100"}`}
+                    >
+                        <path
+                            fillRule="evenodd"
+                            clipRule="evenodd"
+                            d="M15.1918 8.90615C15.6381 8.45983 16.3618 8.45983 16.8081 8.90615L21.9509 14.049C22.3972 14.4953 22.3972 15.2189 21.9509 15.6652C21.5046 16.1116 20.781 16.1116 20.3347 15.6652L17.1428 12.4734V22.2857C17.1428 22.9169 16.6311 23.4286 15.9999 23.4286C15.3688 23.4286 14.8571 22.9169 14.8571 22.2857V12.4734L11.6652 15.6652C11.2189 16.1116 10.4953 16.1116 10.049 15.6652C9.60265 15.2189 9.60265 14.4953 10.049 14.049L15.1918 8.90615Z"
+                            fill="currentColor"
+                        />
+                    </svg>
+                </div>
+            </button>
         </div>
     );
 };
