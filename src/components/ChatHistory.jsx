@@ -29,7 +29,6 @@ const ChatHistory = ({ messages }) => {
                     >
                         {message.isImage ? (
                             <div className="flex flex-col items-start relative">
-
                                 <div className="flex flex-row items-start justify-between w-full mb-1">
                                     <p className="text-sm text-gray-600 mb-1">AI Generated Image:</p>
                                     {/* ✅ Updated Copy Button */}
@@ -57,15 +56,8 @@ const ChatHistory = ({ messages }) => {
 
             {/* ✅ Image Popup (Centered, 80% width) */}
             {popupImage && (
-                <div
-                    className="fixed inset-0 flex items-center justify-center bg-[rgba(0,0,0,0.7)] backdrop-blur-md z-50"
-                    onClick={() => setPopupImage(null)}
-                >
-                    <img
-                        src={popupImage}
-                        alt="Enlarged preview"
-                        className="max-w-[80%] max-h-[80%] rounded-2xl shadow-lg"
-                    />
+                <div className="fixed inset-0 flex items-center justify-center bg-[rgba(0,0,0,0.7)] backdrop-blur-md z-50" onClick={() => setPopupImage(null)}>
+                    <img src={popupImage} alt="Enlarged preview" className="max-w-[80%] max-h-[80%] rounded-2xl shadow-lg" />
                 </div>
             )}
         </div>

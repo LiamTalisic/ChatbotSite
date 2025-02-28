@@ -1,13 +1,14 @@
 import { useState, useEffect } from "react";
-import { auth } from "../firebaseConfig";
+import { auth } from "../../firebaseConfig";
 import { signOut, onAuthStateChanged, signInWithPopup, GoogleAuthProvider } from "firebase/auth";
 import { getFirestore, doc, getDoc, setDoc, onSnapshot } from "firebase/firestore";
+import ModelDropdown from "./ModelDropdown"; // adjust the path as needed
 
 const provider = new GoogleAuthProvider();
 const db = getFirestore();
 const API_URL = import.meta.env.VITE_BACKEND_URL;
 
-function NavBar() {
+function NavBar({ setSelectedModel, selectedModel }) {
     const [user, setUser] = useState(null);
     const [credits, setCredits] = useState(0);
     const [dropdownOpen, setDropdownOpen] = useState(false);
@@ -18,33 +19,16 @@ function NavBar() {
 
             if (authUser) {
                 const userRef = doc(db, "users", authUser.uid);
+                console.log("User id:", authUser.uid); //hmm i dont like this
+                // not familiar enough with it to actually know if its actually a security issue, but it does seem like users could potentially
+                // forcefully change their id to someone elses use get credits function
 
                 try {
-                    const userDoc = await getDoc(userRef);
+                    console.log("User credits:", getUserCredits(authUser));
 
-                    if (!userDoc.exists()) {
-                        console.log("🆕 Creating new user in Firestore...");
+                    // console log the user db reference
+                    console.log(userRef);
 
-                        //  Create new user document in Firestore
-                        // this is terrible, need to set credits in the backend
-
-                        await setDoc(userRef, {
-                            uid: authUser.uid,
-                            email: authUser.email,
-                            credits: 10, // 🔹 New users get 10 free credits
-                            canChat: true, // 🔹 Allow chat by default
-                            stripeCustomerId: "", // 🔹 Will be filled when first payment is made
-                            lastPaymentDate: "", // 🔹 Will update when a payment is made
-                            totalCreditsPurchased: 0, // 🔹 Tracks total credits purchased
-                            createdAt: new Date().toISOString(),
-                        });
-
-                        console.log("✅ New user successfully added to Firestore.");
-                    } else {
-                        console.log("✅ User already exists in Firestore.");
-                    }
-
-                    // ✅ Real-time listener for credit updates
                     const unsubscribeCredits = onSnapshot(userRef, (docSnap) => {
                         if (docSnap.exists()) {
                             setCredits(docSnap.data().credits || 0);
@@ -63,10 +47,61 @@ function NavBar() {
 
     const handleGoogleSignIn = async () => {
         try {
-            await signInWithPopup(auth, provider);
+            const result = await signInWithPopup(auth, provider);
+            const user = result.currentUser;
+
+            const idToken = await user.getIdToken();
+
+            // Call your backend to create/update user in Firestore
+            await createUserInDatabase(user, idToken);
         } catch (error) {
             console.error("Google Sign-In Error:", error);
         }
+    };
+
+    const createUserInDatabase = async (user, idToken) => {
+        try {
+            const response = await fetch(`${API_URL}/user/signup`, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    Authorization: `Bearer ${idToken}`,
+                },
+                body: JSON.stringify({
+                    uid: user.uid,
+                    email: user.email,
+                    displayName: user.displayName,
+                    photoURL: user.photoURL,
+                }),
+            });
+
+            if (!response.ok) {
+                throw new Error("Failed to create user in database");
+            }
+
+            const data = await response.json();
+            console.log("User created/updated in database:", data);
+        } catch (error) {
+            console.error("Error creating user in database:", error);
+        }
+    };
+
+    // Call the backend to get the user credits
+    const getUserCredits = async (user) => {
+        const idToken = await user.getIdToken();
+        // call the backend to get the user credits
+        const response = await fetch(`${API_URL}/user/credits`, {
+            method: "GET",
+            headers: {
+                "Content-Type": "application/json",
+                Authorization: `Bearer ${idToken}`,
+            },
+        });
+        if (!response.ok) {
+            throw new Error("Failed to get user credits");
+        }
+        const data = await response.json();
+        console.log("User credits:", data);
     };
 
     const handleLogout = async () => {
@@ -94,7 +129,7 @@ function NavBar() {
                     "Content-Type": "application/json",
                     Authorization: `Bearer ${token}`,
                 },
-                body: JSON.stringify({ creditsAmount: 50 }), // Default: 50 credits purchase
+                body: JSON.stringify({ creditsAmount: 250 }), // Default: 50 credits purchase
             });
 
             if (!response.ok) {
@@ -117,9 +152,7 @@ function NavBar() {
         <nav className="draggable no-draggable-children absolute w-full top-0 p-3 flex items-center justify-between z-10 h-header-height font-semibold bg-token-main-surface-primary ">
             <div className="flex items-center space-x-4 pl-10">
                 {/* change this to a model selection dropdown*/}
-                <button onClick={() => setShowComponent("chat")} className="hover:text-gray-300 duration-150">
-                    New Text Chat
-                </button>
+                <ModelDropdown setSelectedModel={setSelectedModel} selectedModel={selectedModel} />
             </div>
 
             <div className="relative pr-10">
@@ -129,10 +162,16 @@ function NavBar() {
                         <span className="text-gray-700 font-semibold">Credits: {credits}</span>
 
                         {/* Profile Picture Button */}
-                        <button onClick={() => setDropdownOpen(!dropdownOpen)} className="flex h-10 w-10 items-center justify-center rounded-full hover:bg-gray-600 focus-visible:outline-0">
-                            <img alt="User" src={user.photoURL || "https://via.placeholder.com/40"} className="rounded-full w-10 h-10" referrerPolicy="no-referrer" />
-                        </button>
-
+                        <div className="flex h-10 w-10 items-center justify-center rounded-full bg-gray-800 ">
+                            <button onClick={() => setDropdownOpen(!dropdownOpen)}>
+                                <img
+                                    alt="User"
+                                    src={user.photoURL || "https://via.placeholder.com/40"}
+                                    className="rounded-full  scale-[105%] hover:scale-[75%] transition duration-500"
+                                    referrerPolicy="no-referrer"
+                                />
+                            </button>
+                        </div>
                         {/* Dropdown Menu */}
                         {dropdownOpen && (
                             <div className="absolute right-10 mt-35 w-48 bg-white shadow-md rounded-lg overflow-hidden border border-gray-200">

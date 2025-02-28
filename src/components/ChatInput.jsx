@@ -4,7 +4,7 @@ import { getFirestore, doc, onSnapshot } from "firebase/firestore";
 
 const db = getFirestore();
 
-const ChatInput = ({ onSendMessage, setMessages }) => {
+const ChatInput = ({ setMessages, selectedModel }) => {
     const [message, setMessage] = useState("");
     const [canChat, setCanChat] = useState(false);
     const [credits, setCredits] = useState(0); // 🔹 Track user credits
@@ -56,7 +56,6 @@ const ChatInput = ({ onSendMessage, setMessages }) => {
         if (!token) return;
 
         setIsLoading(true);
-        onSendMessage({ text: trimmedMessage, sender: "user" });
 
         setMessage("");
 
