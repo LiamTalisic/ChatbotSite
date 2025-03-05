@@ -116,7 +116,7 @@ const ChatHistory = ({ messages }) => {
                 );
             } else {
                 // fallback
-                return <code className="bg-gray-300 text-gray-800 p-1 rounded font-mono">{children}</code>;
+                return <code className="bg-gray-50 text-purple-700 px-1 py-0.5 rounded font-mono shadow-sm">{children}</code>;
             }
         },
 
@@ -172,7 +172,7 @@ const ChatHistory = ({ messages }) => {
                 {messages.map((message) => (
                     <div
                         key={message.id}
-                        className={`relative px-3 py-1.5 rounded-2xl max-w-[80%] break-words ${message.sender === "user" ? "bg-blue-500 text-white self-end" : "bg-gray-200 text-black self-start"}`}
+                        className={`relative px-3 py-1.5 rounded-2xl  break-words ${message.sender === "user" ? "bg-blue-500 text-white self-end max-w-[60%]" : " text-black self-start max-w-[100%]"}`}
                     >
                         {message.isImage ? (
                             <div className="flex flex-col items-start relative">
