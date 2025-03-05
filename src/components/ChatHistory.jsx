@@ -115,8 +115,8 @@ const ChatHistory = ({ messages }) => {
                     </div>
                 );
             } else {
-                // fallback to inline code
-                return <code className="bg-gray-100 text-purple-700 px-1 py-0.5 rounded font-mono shadow-sm">{children}</code>;
+                // fallback
+                return <code className="bg-gray-300 text-gray-800 p-1 rounded font-mono">{children}</code>;
             }
         },
 
@@ -163,7 +163,7 @@ const ChatHistory = ({ messages }) => {
     return (
         <div
             ref={chatContainerRef}
-            className="flex flex-col w-full mx-auto p-4 shadow-md shadow-gray-300 border border-gray-200 rounded-lg bg-white mb-5 overflow-y-auto
+            className="flex flex-col w-full mx-auto p-4 shadow-md shadow-gray-300 border border-gray-200 rounded-lg bg-white mb-5 overflow-y-auto h-full
                 [&::-webkit-scrollbar]:w-2 
                 [&::-webkit-scrollbar-track]:bg-gray-100 [&::-webkit-scrollbar-track]:rounded-full
                 [&::-webkit-scrollbar-thumb]:bg-gray-300 [&::-webkit-scrollbar-thumb]:rounded-full"
@@ -172,7 +172,7 @@ const ChatHistory = ({ messages }) => {
                 {messages.map((message) => (
                     <div
                         key={message.id}
-                        className={`relative px-3 py-1.5 rounded-2xl max-w-[80%] break-words ${message.sender === "user" ? "bg-blue-500 text-white self-end" : " text-black self-start"}`}
+                        className={`relative px-3 py-1.5 rounded-2xl max-w-[80%] break-words ${message.sender === "user" ? "bg-blue-500 text-white self-end" : "bg-gray-200 text-black self-start"}`}
                     >
                         {message.isImage ? (
                             <div className="flex flex-col items-start relative">
