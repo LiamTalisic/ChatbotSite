@@ -172,7 +172,7 @@ const ChatHistory = ({ messages }) => {
                 {messages.map((message) => (
                     <div
                         key={message.id}
-                        className={`relative px-3 py-1.5 rounded-2xl  break-words ${message.sender === "user" ? "bg-blue-500 text-white self-end max-w-[60%]" : " text-black self-start max-w-[100%]"}`}
+                        className={`relative px-3 py-1.5 rounded-2xl  break-words ${message.sender === "user" ? "bg-blue-500 text-white self-end max-w-[80%]" : " text-black self-start max-w-[100%]"}`}
                     >
                         {message.isImage ? (
                             <div className="flex flex-col items-start relative">
