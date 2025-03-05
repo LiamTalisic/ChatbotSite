@@ -24,11 +24,6 @@ function NavBar({ setSelectedModel, selectedModel }) {
                 // forcefully change their id to someone elses use get credits function
 
                 try {
-                    console.log("User credits:", getUserCredits(authUser));
-
-                    // console log the user db reference
-                    console.log(userRef);
-
                     const unsubscribeCredits = onSnapshot(userRef, (docSnap) => {
                         if (docSnap.exists()) {
                             setCredits(docSnap.data().credits || 0);
@@ -101,7 +96,6 @@ function NavBar({ setSelectedModel, selectedModel }) {
             throw new Error("Failed to get user credits");
         }
         const data = await response.json();
-        console.log("User credits:", data);
     };
 
     const handleLogout = async () => {

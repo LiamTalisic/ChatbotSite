@@ -19,7 +19,8 @@ const Chat = ({ selectedModel }) => {
     };
 
     return (
-        <div className="flex flex-col p-5 m-5 border rounded-3xl shadow-md shadow-black bg-gray-50 justify-between h-full max-h-[95vh] chatbox">
+        <div className="flex flex-col p-4 rounded-3xl shadow-md shadow-black justify-between h-[90vh] chatbox">
+            {/* Add in a title box, that  */}
             <ChatHistory messages={messages} />
             <ChatInput onSendMessage={handleSendMessage} setMessages={setMessages} selectedModel={selectedModel} messageHistory={messages} />
         </div>

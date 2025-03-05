@@ -3,7 +3,7 @@ import Chat from "./components/Chat";
 import Navbar from "./components/nav/Navbar";
 
 function App() {
-    const [selectedModel, setSelectedModel] = useState("gpt-4o");
+    const [selectedModel, setSelectedModel] = useState("gpt-4o-mini");
 
     return (
         <>

@@ -39,18 +39,38 @@ textarea {
   }
 
   .chatbox {
-    margin-top: 3.5rem;
+    height: 90vh;
+    margin-top: 3.75rem;
+    margin-right: 1.25rem;
+    margin-left: 1.25rem;
   }
 }
 
 /* Medium screens (min-width: 768px) */
 @media (min-width: 768px) {
   .SizedDiv {
-    width: 60%;
+    width: 100%;
+
   }
 
   .chatbox {
-    height: 100%;
-    margin-top: 1.25rem;
+    height: 90vh;
+    margin-top: 3.75rem;
+    margin-right: 1.25rem;
+    margin-left: 1.25rem;
+  }
+}
+
+/* Large screens (min-width: 1024px) */
+@media (min-width: 1024px) {
+  .SizedDiv {
+    width: 60%;
+    height: 100vh;
+  }
+
+  .chatbox {
+    height: 98vh;
+    margin-top: 1vh;
+    margin-bottom: 1vh;
   }
 }
