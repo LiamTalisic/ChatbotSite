@@ -5,10 +5,18 @@ const ChatHistory = ({ messages }) => {
     const chatContainerRef = useRef(null);
     const [popupImage, setPopupImage] = useState(null);
 
-    // Auto-scroll to the bottom when a new message is added
+    // Auto-scroll to the bottom only if the user is near the bottom
     useEffect(() => {
-        if (chatContainerRef.current) {
-            chatContainerRef.current.scrollTop = chatContainerRef.current.scrollHeight;
+        const container = chatContainerRef.current;
+        if (!container) return;
+
+        // Set a threshold (in pixels) to determine if the user is at the bottom
+        const threshold = 50;
+        const { scrollTop, scrollHeight, clientHeight } = container;
+
+        // Check if the user is near the bottom
+        if (scrollHeight - scrollTop - clientHeight < threshold) {
+            container.scrollTop = scrollHeight;
         }
     }, [messages]);
 

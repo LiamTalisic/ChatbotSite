@@ -4,10 +4,11 @@ import { getFirestore, doc, onSnapshot } from "firebase/firestore";
 
 const db = getFirestore();
 
-const ChatInput = ({ setMessages, selectedModel }) => {
+const ChatInput = ({ onSendMessage, setMessages, selectedModel, messageHistory }) => {
     const [message, setMessage] = useState("");
-    const [canChat, setCanChat] = useState(false);
-    const [credits, setCredits] = useState(0); // 🔹 Track user credits
+    const [credits, setCredits] = useState(0);
+    const [canChat, setCanChat] = useState(false); // 🔹 Added for better control and visibility in the
+
     const [isLoading, setIsLoading] = useState(false);
     const [isHovered, setIsHovered] = useState(false);
     const [controller, setController] = useState(null);
@@ -56,7 +57,7 @@ const ChatInput = ({ setMessages, selectedModel }) => {
         if (!token) return;
 
         setIsLoading(true);
-
+        onSendMessage({ text: trimmedMessage, sender: "user" });
         setMessage("");
 
         try {
@@ -66,7 +67,7 @@ const ChatInput = ({ setMessages, selectedModel }) => {
                     "Content-Type": "application/json",
                     Authorization: `Bearer ${token}`,
                 },
-                body: JSON.stringify({ message: trimmedMessage }),
+                body: JSON.stringify({ message: trimmedMessage, model: selectedModel, history: messageHistory }),
                 signal: controller.signal, // Attach AbortController
             });
 
