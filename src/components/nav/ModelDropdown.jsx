@@ -2,7 +2,7 @@ import { useState } from "react";
 
 function ModelDropdown({ setSelectedModel, selectedModel }) {
     const [isDropdownOpen, setIsDropdownOpen] = useState(false);
-    const models = ["gpt-4o", "gpt-4o-mini", "gpt-4.5-preview", "o1-mini"];
+    const models = ["gpt-4o", "gpt-4o-mini", "gpt-4.5-preview", "o1-mini", "o1", "o3-mini"];
 
     const handleModelSelect = (model) => {
         setSelectedModel(model);
