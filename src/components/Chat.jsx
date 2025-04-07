@@ -4,10 +4,7 @@ import ChatHistory from "./ChatHistory";
 import ChatInput from "./ChatInput";
 
 const Chat = ({ selectedModel }) => {
-    const [messages, setMessages] = useState([
-        { id: 1, text: "Hello! How can I assist you today?", sender: "bot" },
-        { id: 2, text: "I can help you with code, general questions, or even generate images!", sender: "user" },
-    ]);
+    const [messages, setMessages] = useState([{ id: 1, text: "Hello! How can I assist you today?", sender: "bot" }]);
 
     // 🔹 Ensure all messages get a unique ID and proper format
     const handleSendMessage = (messageObj) => {
