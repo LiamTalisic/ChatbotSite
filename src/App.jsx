@@ -11,6 +11,9 @@ function MainPage({ selectedModel, setSelectedModel }) {
             <Navbar setSelectedModel={setSelectedModel} selectedModel={selectedModel} />
             <div className="flex flex-col items-center justify-center min-h-[400px] h-[100vh] ">
                 <div className="SizedDiv relative">
+                    <button onClick={() => navigate("/secret")} className="relative m-2 bg-blue-500 text-white p-2 rounded z-99999">
+                        Secret Page
+                    </button>
                     <Chat selectedModel={selectedModel} />
                 </div>
             </div>
@@ -22,7 +25,7 @@ function SecretPage() {
     return (
         <div className="flex flex-col items-center justify-center h-screen bg-pink-100">
             <h1 className="text-4xl font-bold mb-4">Hi Nora 💖</h1>
-            <p className="text-lg text-center max-w-md">You are the most amazing person, and I wanted to remind you how much I love you! 💕</p>
+            <p className="text-lg text-center max-w-md">You are the most amazing person, and I wanted a special place just for you. 💕</p>
         </div>
     );
 }
