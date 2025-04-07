@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect } from "react";
 import { auth } from "../firebaseConfig";
 import { getFirestore, doc, onSnapshot } from "firebase/firestore";
+import { isMobile } from "react-device-detect";
 
 const db = getFirestore();
 

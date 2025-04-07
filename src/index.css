@@ -19,8 +19,10 @@ textarea {
 }
 
 .chatbox {
-  height: 100%;
-  margin-top: 0;
+  height: 85vh;
+  margin-top: 3.75rem;
+  margin-right: 1.25rem;
+  margin-left: 1.25rem;
 }
 
 .SizedDiv {
@@ -31,20 +33,6 @@ textarea {
   height: 100vh;
 }
 
-/* Small screens (min-width: 400px) */
-@media (min-width: 400px) {
-  .SizedDiv {
-    width: 100%;
-
-  }
-
-  .chatbox {
-    height: 90vh;
-    margin-top: 3.75rem;
-    margin-right: 1.25rem;
-    margin-left: 1.25rem;
-  }
-}
 
 /* Medium screens (min-width: 768px) */
 @media (min-width: 768px) {

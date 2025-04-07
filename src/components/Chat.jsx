@@ -1,9 +1,13 @@
 import { useState } from "react";
+import { isMobile } from "react-device-detect";
 import ChatHistory from "./ChatHistory";
 import ChatInput from "./ChatInput";
 
 const Chat = ({ selectedModel }) => {
-    const [messages, setMessages] = useState([{ id: 1, text: "Hello! How can I assist you today?", sender: "bot" }]);
+    const [messages, setMessages] = useState([
+        { id: 1, text: "Hello! How can I assist you today?", sender: "bot" },
+        { id: 2, text: "I can help you with code, general questions, or even generate images!", sender: "user" },
+    ]);
 
     // 🔹 Ensure all messages get a unique ID and proper format
     const handleSendMessage = (messageObj) => {
@@ -20,7 +24,6 @@ const Chat = ({ selectedModel }) => {
 
     return (
         <div className="flex flex-col p-4 rounded-3xl shadow-md shadow-black justify-between h-[90vh] chatbox">
-            {/* Add in a title box, that  */}
             <ChatHistory messages={messages} />
             <ChatInput onSendMessage={handleSendMessage} setMessages={setMessages} selectedModel={selectedModel} messageHistory={messages} />
         </div>

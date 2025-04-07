@@ -3,6 +3,7 @@ import { auth } from "../../firebaseConfig";
 import { signOut, onAuthStateChanged, signInWithPopup, GoogleAuthProvider } from "firebase/auth";
 import { getFirestore, doc, onSnapshot } from "firebase/firestore";
 import ModelDropdown from "./ModelDropdown"; // adjust path as needed
+import { isMobile } from "react-device-detect";
 
 const provider = new GoogleAuthProvider();
 const db = getFirestore();

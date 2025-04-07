@@ -4,7 +4,7 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
-    "dev": "vite",
+    "dev": "vite --host",
     "build": "vite build",
     "lint": "eslint .",
     "preview": "vite preview"
@@ -16,8 +16,10 @@
     "openai": "^4.83.0",
     "postcss": "^8.5.1",
     "react": "^19.0.0",
+    "react-device-detect": "^2.2.3",
     "react-dom": "^19.0.0",
     "react-markdown": "^9.1.0",
+    "react-router-dom": "^7.5.0",
     "react-syntax-highlighter": "^15.6.1",
     "remark-gfm": "^4.0.1",
     "tailwindcss": "^4.0.6"
